@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Reading Web</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.js"></script>
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="layout">
+            <div class="content" id="content">
+                <h3 class="content-title" id="contentTitle"></h3>
+                <div class="content-text" id="contentText"></div>
+            </div>
+            <div class="nav-buttons">
+                <button id="prevChapter">上一章</button>
+                <button id="nextChapter">下一章</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h3 id="sidebarTitle">功能面板</h3>
+            <button class="sidebar-close" onclick="closeSidebar()">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="currentColor"
+                        d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                </svg>
+            </button>
+        </div>
+        <div id="sidebarContent" class="sidebar-content">
+            <!-- 1. 设置面板 -->
+            <div id="settingsPanel" class="sidebar-panel">
+                <div class="settings-container">
+                    <div class="settings-group">
+                        <h4>文本设置</h4>
+                        <div class="setting-item">
+                            <label>字体大小: <span id="fontSizeValue">18px</span></label>
+                            <input type="range" id="fontSize" min="12" max="32" value="18" oninput="updateFontSize(this.value)">
+                        </div>
+                        <div class="setting-item">
+                            <label>行间距: <span id="lineHeightValue">1.8</span></label>
+                            <input type="range" id="lineHeight" min="1.2" max="3" step="0.1" value="1.8" oninput="updateLineHeight(this.value)">
+                        </div>
+                        <div class="setting-item">
+                            <label>字体选择:</label>
+                            <select id="fontFamily" onchange="updateFontFamily(this.value)">
+                                <option value="Noto Serif SC" selected>思源宋体</option>
+                                <option value="Microsoft YaHei">微软雅黑</option>
+                                <option value="SimSun">宋体</option>
+                                <option value="KaiTi">楷体</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h4>页面设置</h4>
+                        <div class="setting-item">
+                            <label>页面宽度:</label>
+                            <select id="pageWidth" onchange="updatePageWidth(this.value)">
+                                <option value="auto" selected>自动</option>
+                                <option value="400px">迷你</option>
+                                <option value="600px">小</option>
+                                <option value="800px">中</option>
+                                <option value="1000px">大</option>
+                                <option value="1200px">巨大</option>
+                                <option value="1400px">超大</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>段落间距:</label>
+                            <input type="range" id="paragraphSpacing" min="0.5" max="3" step="0.1" value="1.5" oninput="updateParagraphSpacing(this.value)">
+                        </div>
+                        <div class="setting-item">
+                            <label>翻页模式:</label>
+                            <select id="pageMode" onchange="updatePageMode(this.value)">
+                                <option value="autoAppend">滚动自动拼接</option>
+                                <option value="button" selected>按钮翻页</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h4>自动滚动</h4>
+                        <div class="setting-item">
+                            <label>滚动速度:</label>
+                            <input type="range" id="scrollSpeed" min="10" max="150" value="40" oninput="updateScrollSpeed(this.value)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 文件输入面板 -->
+            <div id="fileInputPanel" class="sidebar-panel">
+                <div class="file-input-container">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="sidebarFileInput" accept=".txt">
+                        <p class="file-hint">支持.txt格式，最大100MB</p>
+                    </div>
+                    <div class="recent-files">
+                        <ul id="sidebarRecentList" class="recent-list"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 章节目录面板 -->
+            <div id="chapterListPanel" class="sidebar-panel">
+                <div class="chapter-list-container">
+                    <input type="text" id="chapterSearchInput" class="sidebar-input" placeholder="搜索章节...">
+                    <ul id="sidebarChapterList" class="chapter-list"></ul>
+                </div>
+            </div>
+
+            <!-- 4. 主题设置面板 -->
+            <div id="themePanel" class="sidebar-panel">
+                <div class="theme-list" id="themeListContent">
+                    <!-- 内容会在generateThemeList函数中动态填充 -->
+                </div>
+            </div>
+
+            <!-- 5. 最近阅读章节面板 -->
+            <div id="recentChaptersPanel" class="sidebar-panel">
+                <div class="recent-chapters-container" id="recentChaptersContent">
+                    <!-- 内容会在showRecentChapters函数中动态填充 -->
+                </div>
+            </div>
+
+            <!-- 6. 书签面板 -->
+            <div id="bookmarksPanel" class="sidebar-panel">
+                <div class="bookmarks-container" id="bookmarksContent">
+                    <!-- 内容会在showBookmarks函数中动态填充 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="function-buttons">
+        <button id="fileInputButton" class="function-btn" onclick="showFileInput()" title="打开文件">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+        </button>
+        <button id="chapterListButton" class="function-btn" onclick="showChapterList()" title="查看目录">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor" d="M3,9H17V7H3V9M3,13H17V11H3V13M3,17H17V15H3V17M19,17H21V15H19V17M19,7V9H21V7H19M19,13H21V11H19V13Z" />
+            </svg>
+        </button>
+        <button id="themeButton" class="function-btn" onclick="toggleTheme()" title="切换主题">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor"
+                    d="M12,18C11.11,18 10.26,17.8 9.5,17.45C11.56,16.5 13,14.42 13,12C13,9.58 11.56,7.5 9.5,6.55C10.26,6.2 11.11,6 12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31L23.31,12L20,8.69Z" />
+            </svg>
+        </button>
+        <button id="autoScrollButton" class="function-btn" onclick="toggleAutoScroll()" title="自动滚动">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor"
+                    d="M13,16V8H15L12,5L9,8H11V16H9L12,19L15,16H13M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z" />
+            </svg>
+        </button>
+        <button id="bookmarkButton" class="function-btn" onclick="toggleBookmark()" title="添加书签">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor" d="M17,3H7A2,2 0 0,0 5,5V21L12,18L19,21V5C19,3.89 18.1,3 17,3Z" />
+            </svg>
+        </button>
+        <button id="bookmarkButton" class="function-btn" onclick="showBookmarks()" title="查看书签">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor"
+                    d="M19,2H14.82C14.4,0.84 13.3,0 12,0C10.7,0 9.6,0.84 9.18,2H5C3.9,2 3,2.9 3,4V20C3,21.1 3.9,22 5,22H19C20.1,22 21,21.1 21,20V4C21,2.9 20.1,2 19,2M12,2C12.55,2 13,2.45 13,3C13,3.55 12.55,4 12,4C11.45,4 11,3.55 11,3C11,2.45 11.45,2 12,2M7,7H17V9H7V7M7,11H17V13H7V11M7,15H17V17H7V15Z" />
+            </svg>
+        </button>
+        <button id="recentChaptersButton" class="function-btn" onclick="showRecentChapters()" title="最近阅读">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor"
+                    d="M13.5,8H12V13L16.28,15.54L17,14.33L13.5,12.25V8M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3" />
+            </svg>
+        </button>
+        <button id="settingsButton" class="function-btn" onclick="showSettings()" title="阅读设置">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor"
+                    d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+            </svg>
+        </button>
+        <button id="fullscreenButton" class="function-btn" onclick="toggleFullscreen()" title="全屏阅读">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor" d="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M10,17V19H5V14H7V17H10Z" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="progress-tip" id="progressTip">
+        <div class="progress-tip-box">
+            <span>已读完 <span id="readProgress">0</span>%</span>
+            <div class="progress-bar">
+                <div class="progress-bar-fill" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="shortcut-tip">
+        快捷键：← 上一章 | → 下一章
+    </div>
+
+    <div id="loadingIndicator" class="loading" style="display: none;">
+        <div class="loading-spinner"></div>
+        <div style="color: white; margin-top: 20px;">正在加载文件...</div>
+    </div>
+
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <script src="js/utils.js"></script>
+    <script>
+        let novelName = ''; // 文件名
+        let chapters = []; // 章节列表
+        let currentChapterIndex = 0; // 当前章节索引
+        let currentChapterContent = []; // 当前章节内容
+        let autoScrollSpeed = 50; // 自动滚动速度
+        let pageMode = 'autoAppend'; // 翻页模式
+
+        const MAX_RECENT_FILES = 100; // 最大最近文件数
+
+        //#region 快捷键
+        // 添加键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowLeft':
+                    showChapter(currentChapterIndex - 1);
+                    break;
+                case 'ArrowRight':
+                    showChapter(currentChapterIndex + 1);
+                    break;
+            }
+        });
+
+        // 显示快捷键提示
+        function showShortcutTip() {
+            // 如果屏幕小于768px，则不显示快捷键提示
+            if (window.innerWidth < 768) return;
+            const tip = document.querySelector('.shortcut-tip');
+            tip.style.display = 'block';
+
+            // 5秒后自动隐藏
+            setTimeout(() => {
+                tip.style.display = 'none';
+            }, 5000);
+        }
+        //#endregion
+
+        //#region 主题功能
+        let currentTheme = storageUtil.get('theme') || 'light'; // 当前主题
+        document.documentElement.setAttribute('data-theme', currentTheme);
+
+        // 构建主题列表
+        const generateThemeList = () => {
+            const themes = {
+                light: { name: '极简纯白', icon: '☀️' },
+                dark: { name: '极简深黑', icon: '🌙' },
+                sepia: { name: '极简护眼', icon: '📖' },
+                green: { name: '极简森绿', icon: '🌲' },
+                'dark-green': { name: '极简墨绿', icon: '🌿' },
+                blue: { name: '极简海蓝', icon: '🌊' },
+                'dark-blue': { name: '极简深蓝', icon: '🌊' },
+                pink: { name: '极简樱粉', icon: '🎀' },
+                purple: { name: '极简幻紫', icon: '🌸' },
+            };
+
+            // 更新主题列表内容
+            const themeListContent = document.getElementById('themeListContent');
+            themeListContent.innerHTML = Object.entries(themes).map(([id, theme]) => `
+                <div class="theme-option ${currentTheme === id ? 'active' : ''}" 
+                    onclick="applyTheme('${id}')">
+                    <div class="theme-sample ${id}"></div>
+                    <span>${theme.name} ${theme.icon}</span>
+                </div>
+            `).join('');
+        }
+
+        // 显示主题面板
+        function toggleTheme() {
+            openSidebar('主题设置', 'theme');
+        }
+
+        // 添加应用主题函数
+        function applyTheme(themeId) {
+            currentTheme = themeId;
+            document.documentElement.setAttribute('data-theme', themeId);
+            storageUtil.set('theme', themeId);
+            generateThemeList()
+            closeSidebar();
+        }
+        //#endregion
+
+        //#region 全屏功能
+        // 全屏功能
+        async function toggleFullscreen() {
+            try {
+                if (!document.fullscreenElement &&
+                    !document.webkitFullscreenElement &&
+                    !document.mozFullScreenElement) {
+                    // 进入全屏
+                    const docEl = document.documentElement;
+                    const requestMethod = docEl.requestFullscreen ||
+                        docEl.webkitRequestFullscreen ||
+                        docEl.mozRequestFullScreen;
+
+                    if (requestMethod) {
+                        await requestMethod.call(docEl);
+                        document.body.classList.add('fullscreen-mode');
+                        updateFullscreenButton(true);
+                    }
+                } else {
+                    // 退出全屏
+                    const exitMethod = document.exitFullscreen ||
+                        document.webkitExitFullscreen ||
+                        document.mozCancelFullScreen;
+
+                    if (exitMethod) {
+                        await exitMethod.call(document);
+                    }
+                }
+            } catch (error) {
+                console.error('全屏切换失败:', error);
+                // 回滚状态
+                document.body.classList.remove('fullscreen-mode');
+                updateFullscreenButton(false);
+            }
+        }
+
+        // 更新全屏按钮状态
+        function updateFullscreenButton(isFullscreen) {
+            const button = document.querySelector('#fullscreenButton');
+            if (!button) return;
+
+            if (isFullscreen) {
+                button.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path fill="currentColor" 
+                            d="M14,14H19V16H16V19H14V14M5,14H10V19H8V16H5V14M8,5H10V10H5V8H8V5M19,8V10H14V5H16V8H19Z" />
+                    </svg>
+                `;
+                button.title = "退出全屏";
+            } else {
+                button.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path fill="currentColor" 
+                              d="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M10,17V19H5V14H7V17H10Z" />
+                    </svg>
+                `;
+                button.title = "全屏阅读";
+            }
+        }
+
+        // 监听全屏变化事件
+        function handleFullscreenChange() {
+            const isFullscreen = !!(document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement);
+
+            document.body.classList.toggle('fullscreen-mode', isFullscreen);
+            updateFullscreenButton(isFullscreen);
+        }
+
+        // 添加全屏相关事件监听
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+
+        // 添加 ESC 键退出全屏的处理
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.body.classList.contains('fullscreen-mode')) {
+                toggleFullscreen();
+            }
+        });
+        //#endregion
+
+        //#region 自动滚动
+        let autoScrollInterval; // 自动滚动计时器
+        let isAutoScrolling = false; // 自动滚动状态
+
+        // 停止自动滚动
+        function stopAutoScroll() {
+            clearInterval(autoScrollInterval);
+            isAutoScrolling = false;
+            const autoScrollBtn = document.querySelector('#autoScrollButton');
+            if (autoScrollBtn) {
+                autoScrollBtn.style.backgroundColor = 'var(--card-bg)';
+            }
+        }
+
+        // 切换自动滚动
+        function toggleAutoScroll() {
+            if (isAutoScrolling) {
+                stopAutoScroll()
+            } else {
+                const autoScrollBtn = document.querySelector('#autoScrollButton');
+                isAutoScrolling = true;
+                autoScrollBtn && (autoScrollBtn.style.backgroundColor = 'var(--active-bg)');
+                autoScrollInterval = setInterval(() => {
+                    const content = document.querySelector('.content');
+                    content.scrollTop += autoScrollSpeed / 40;
+
+                    // 当滚动到底部时，自动翻页
+                    if (content.scrollTop + content.clientHeight >= content.scrollHeight) {
+                        if (pageMode === 'autoAppend') {
+                            (currentChapterIndex < chapters.length - 1) ? appendNextChapter() : stopAutoScroll()
+                        } else {
+                            setTimeout(() => {
+                                (currentChapterIndex < chapters.length - 1) ? showChapter(currentChapterIndex + 1) : stopAutoScroll()
+                            }, 3000)
+                        }
+                    }
+                }, 16);
+            }
+        }
+        //#endregion
+
+        //#region 阅读进度
+        // 更新阅读进度
+        function updateReadProgress() {
+            const totalChapters = chapters.length;
+            if (totalChapters === 0) return;
+
+            const progress = Math.round((currentChapterIndex / totalChapters) * 100);
+            document.getElementById('readProgress').textContent = progress;
+
+            // 更新进度条
+            const progressBar = document.querySelector('.progress-bar-fill');
+            if (progressBar) {
+                progressBar.style.width = `${progress}%`;
+            }
+        }
+
+        // 保存阅读进度
+        function saveReadingProgress() {
+            const progress = {
+                novelName: novelName,
+                fileName: chapters[currentChapterIndex]?.title || '',
+                chapterIndex: currentChapterIndex,
+                scrollPosition: document.querySelector('.content').scrollTop,
+                timestamp: new Date().getTime(),
+                percentage: Math.round((currentChapterIndex / chapters.length) * 100),
+                lastChapterTitle: chapters[currentChapterIndex]?.title
+            };
+            storageUtil.set('readingProgress', progress);
+        }
+
+        // 恢复阅读进度
+        async function restoreReadingProgress() {
+            const progress = storageUtil.get('readingProgress');
+            if (progress) {
+                await loadRecentFile(progress.novelName);
+                showChapter(progress.chapterIndex);
+            }
+        }
+        //#endregion
+
+        //#region 标签
+        // 添加标签
+        function toggleBookmark() {
+            const currentChapter = chapters[currentChapterIndex];
+            if (!currentChapter) return;
+
+            const scrollPosition = document.querySelector('.content').scrollTop;
+            const bookmarks = storageUtil.get('bookmarks', []);
+
+            const existingBookmark = bookmarks.findIndex(b =>
+                b.chapterIndex === currentChapterIndex);
+
+            if (existingBookmark !== -1) {
+                bookmarks.splice(existingBookmark, 1);
+                Swal.fire({
+                    title: '已删除书签',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } else {
+                bookmarks.push({
+                    novelName: novelName,
+                    chapterIndex: currentChapterIndex,
+                    chapterTitle: currentChapter.title,
+                    scrollPosition: scrollPosition,
+                    timestamp: new Date().getTime()
+                });
+                Swal.fire({
+                    title: '已添加书签',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+
+            storageUtil.set('bookmarks', bookmarks);
+        }
+
+        // 展示标签列表
+        function showBookmarks() {
+            const bookmarks = storageUtil.get('bookmarks', []);
+
+            const bookmarksContent = document.getElementById('bookmarksContent');
+            bookmarksContent.innerHTML = bookmarks.length === 0 ?
+                '<div class="empty-message">暂无书签</div>' :
+                `
+                    <div class="bookmarks-list">
+                        ${bookmarks.map((bookmark, index) => `
+                            <div class="bookmark-item">
+                                <div class="bookmark-content" onclick="gotoBookmark(${index})">
+                                    <div class="bookmark-title">${bookmark.chapterTitle}</div>
+                                    <div class="bookmark-time">${new Date(bookmark.timestamp).toLocaleString()}</div>
+                                </div>
+                                <button class="delete-btn" onclick="deleteBookmark(${index})">
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+            `;
+            openSidebar('书签列表', 'bookmarks');
+        }
+
+        // 跳转标签
+        async function gotoBookmark(index) {
+            const bookmarks = storageUtil.get('bookmarks', []);
+            const bookmark = bookmarks[index];
+            if (bookmark.novelName !== novelName) {
+                await loadRecentFile(bookmark.novelName);
+            }
+            if (bookmark) {
+                showChapter(bookmark.chapterIndex);
+                // Swal.close();
+            }
+            closeSidebar();
+        }
+
+        // 删除标签
+        function deleteBookmark(index) {
+            const bookmarks = storageUtil.get('bookmarks', []);
+            bookmarks.splice(index, 1);
+            storageUtil.set('bookmarks', bookmarks);
+            showBookmarks();
+        }
+        //#endregion
+
+        //#region 阅读时间
+        let readingStartTime = null;
+        let totalReadingTime = parseInt(storageUtil.get('totalReadingTime', 0));
+
+        // 显示阅读时间
+        function showReadingTime() {
+            const timeTip = document.createElement('div');
+            timeTip.textContent = `总阅读时间：${formatReadingTime(totalReadingTime)}`;
+            document.querySelector('#progressTip').appendChild(timeTip);
+        }
+
+        // 开始阅读
+        function startReadingTimer() {
+            if (!readingStartTime) {
+                readingStartTime = new Date();
+            }
+        }
+
+        // 停止阅读且保持阅读时间
+        function stopReadingTimer() {
+            if (readingStartTime) {
+                const endTime = new Date();
+                const timeSpent = Math.floor((endTime - readingStartTime) / 1000);
+                totalReadingTime += timeSpent;
+                storageUtil.set('totalReadingTime', totalReadingTime.toString());
+                readingStartTime = null;
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopReadingTimer();
+            } else {
+                startReadingTimer();
+            }
+        });
+        //#endregion
+
+        //#region 最近阅读
+        // 添加保存最近阅读章节的函数
+        function saveRecentChapter() {
+            try {
+                const recentChapters = storageUtil.get('recentChapters', []);
+                if (!novelName || !chapters) return;
+                const currentChapter = {
+                    novelName: novelName,
+                    title: chapters[currentChapterIndex].title,
+                    chapterIndex: currentChapterIndex,
+                    fileName: document.querySelector('.content-title').textContent, // 当前文件名
+                    time: new Date().getTime()
+                };
+
+                // 移除相同章节
+                const filteredChapters = recentChapters.filter(chapter =>
+                    chapter.title !== currentChapter.title ||
+                    chapter.fileName !== currentChapter.fileName
+                );
+
+                // 添加到开头
+                filteredChapters.unshift(currentChapter);
+
+                // 保持最大数量为10
+                if (filteredChapters.length > 10) {
+                    filteredChapters.pop();
+                }
+
+                storageUtil.set('recentChapters', filteredChapters);
+            } catch (error) {
+                console.error('保存最近阅读章节失败:', error);
+            }
+        }
+
+        // 显示最近阅读列表
+        function showRecentChapters() {
+            const recentChapters = storageUtil.get('recentChapters', []);
+
+            // 更新最近阅读章节内容
+            const recentChaptersContent = document.getElementById('recentChaptersContent');
+            recentChaptersContent.innerHTML = recentChapters.length === 0 ?
+                '<div class="empty-message">暂无阅读记录</div>' :
+                `<div class="recent-list">
+                    ${recentChapters.map((chapter, index) => `
+                        <div class="recent-item">
+                            <div class="recent-item-info" onclick="jumpToRecentChapter(${index})">
+                                <div class="recent-item-title">${chapter.title}</div>
+                                <div class="recent-item-time">${formatTime(chapter.time)}</div>
+                                <div class="recent-item-file">${chapter.fileName}</div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteRecentChapter(${index}); event.stopPropagation();">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>`;
+
+            // 打开侧边栏，显示最近阅读章节面板
+            openSidebar('最近阅读', 'recentChapters');
+        }
+
+        // 跳转到最近阅读的章节
+        async function jumpToRecentChapter(index) {
+            const recentChapters = storageUtil.get('recentChapters', []);
+            const chapter = recentChapters[index];
+
+            if (chapter.novelName !== novelName) {
+                await loadRecentFile(chapter.novelName);
+            }
+
+            if (chapter) {
+                showChapter(chapter.chapterIndex);
+            }
+            closeSidebar();
+        }
+
+        // 删除最近阅读章节
+        function deleteRecentChapter(index) {
+            const recentChapters = storageUtil.get('recentChapters', []);
+            recentChapters.splice(index, 1);
+            storageUtil.set('recentChapters', recentChapters);
+            showRecentChapters();
+        }
+        //#endregion
+
+        //#region 侧边栏
+        // 打开侧边栏
+        function openSidebar(title, panel) {
+            document.getElementById('sidebarTitle').textContent = title;
+
+            // 隐藏所有面板
+            document.querySelectorAll('.sidebar-panel').forEach(p => {
+                p.classList.remove('active');
+            });
+
+            // 显示指定的面板
+            const targetPanel = document.getElementById(panel + 'Panel');
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+
+            document.getElementById('sidebar').classList.add('active');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        }
+
+        // 关闭侧边栏
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+        //#endregion
+
+        //#region 设置功能
+        // 显示设置
+        function showSettings() {
+            const currentSettings = loadReaderSettings();
+
+            // 更新设置面板中的值
+            document.getElementById('fontSizeValue').textContent = `${currentSettings.fontSize}px`;
+            document.getElementById('fontSize').value = currentSettings.fontSize;
+
+            document.getElementById('lineHeightValue').textContent = currentSettings.lineHeight;
+            document.getElementById('lineHeight').value = currentSettings.lineHeight;
+
+            // 更新字体选择
+            const fontFamilySelect = document.getElementById('fontFamily');
+            Array.from(fontFamilySelect.options).forEach(option => {
+                option.selected = option.value === currentSettings.fontFamily;
+            });
+
+            // 更新页面宽度选择
+            const pageWidthSelect = document.getElementById('pageWidth');
+            Array.from(pageWidthSelect.options).forEach(option => {
+                option.selected = option.value === currentSettings.pageWidth;
+            });
+
+            // 更新段落间距
+            document.getElementById('paragraphSpacing').value = currentSettings.paragraphSpacing || 1.5;
+
+            // 更新翻页模式
+            const pageModeSelect = document.getElementById('pageMode');
+            Array.from(pageModeSelect.options).forEach(option => {
+                option.selected = option.value === (currentSettings.pageMode || 'autoAppend');
+            });
+
+            // 更新滚动速度
+            document.getElementById('scrollSpeed').value = currentSettings.scrollSpeed || 50;
+
+            // 打开侧边栏，显示设置面板
+            openSidebar('阅读设置', 'settings');
+        }
+
+        // 加载保存的设置
+        function loadReaderSettings() {
+            const defaultSettings = {
+                fontSize: '18',
+                lineHeight: '1.8',
+                fontFamily: 'Noto Serif SC',
+                pageWidth: 'auto',
+                pageMode: 'autoAppend'
+            };
+
+            try {
+                const settings = storageUtil.get('readerSettings') || defaultSettings;
+                const contentText = document.querySelector('.content-text');
+                if (contentText) {
+                    contentText.style.fontSize = `${settings.fontSize}px`;
+                    contentText.style.lineHeight = settings.lineHeight;
+                    contentText.style.fontFamily = settings.fontFamily;
+
+                    const content = document.querySelector('.content');
+                    if (content) {
+                        content.style.maxWidth = settings.pageWidth === 'auto' ? 'none' : settings.pageWidth;
+                    }
+                }
+
+                // 应用翻页模式设置
+                pageMode = settings.pageMode || 'autoAppend';
+                if (pageMode === 'autoAppend') {
+                    enableAutoAppendMode();
+                    // 确保导航按钮在自动拼接模式下隐藏
+                    document.querySelector('.nav-buttons').style.display = 'none';
+                } else {
+                    disableAutoAppendMode();
+                    // 确保导航按钮在按钮模式下显示
+                    document.querySelector('.nav-buttons').style.display = 'flex';
+                }
+
+                return settings;
+            } catch (error) {
+                console.error('加载阅读设置失败:', error);
+                return defaultSettings;
+            }
+        }
+
+        // 更新字体大小
+        function updateFontSize(value) {
+            const contentText = document.querySelector('.content-text');
+            contentText.style.fontSize = `${value}px`;
+            document.getElementById('fontSizeValue').textContent = `${value}px`;
+            saveSettings();
+        }
+
+        // 更新行高
+        function updateLineHeight(value) {
+            const contentText = document.querySelector('.content-text');
+            contentText.style.lineHeight = value;
+            document.getElementById('lineHeightValue').textContent = value;
+            saveSettings();
+        }
+
+        // 更新字体
+        function updateFontFamily(value) {
+            const contentText = document.querySelector('.content-text');
+            contentText.style.fontFamily = value;
+            saveSettings();
+        }
+
+        // 更新页面宽度
+        function updatePageWidth(value) {
+            const content = document.querySelector('.content');
+            content.style.maxWidth = value === 'auto' ? 'none' : value;
+            saveSettings();
+        }
+
+        // 更新段落间距
+        function updateParagraphSpacing(value) {
+            const contentText = document.querySelector('.content-text');
+            contentText.style.marginBottom = `${value}em`;
+            saveSettings();
+        }
+
+        // 更新滚动速度
+        function updateScrollSpeed(value) {
+            autoScrollSpeed = value;
+            saveSettings();
+        }
+
+        // 更新翻页模式
+        function updatePageMode(value) {
+            pageMode = value;
+
+            if (pageMode === 'autoAppend') {
+                enableAutoAppendMode();
+                document.querySelector('.nav-buttons').style.display = 'none'; // 确保导航按钮在自动拼接模式下始终隐藏
+            } else {
+                disableAutoAppendMode();
+                document.querySelector('.nav-buttons').style.display = 'flex'; // 在非自动拼接模式下显示导航按钮
+            }
+            saveSettings();
+        }
+
+        // 保存设置
+        function saveSettings() {
+            const settings = {
+                fontSize: document.getElementById('fontSize').value,
+                lineHeight: document.getElementById('lineHeight').value,
+                fontFamily: document.getElementById('fontFamily').value,
+                pageWidth: document.getElementById('pageWidth').value,
+                paragraphSpacing: document.getElementById('paragraphSpacing').value,
+                scrollSpeed: document.getElementById('scrollSpeed').value,
+                pageMode: document.getElementById('pageMode')?.value || pageMode || 'autoAppend'
+            };
+            storageUtil.set('readerSettings', settings);
+        }
+        //#endregion
+
+        //#region 文件与章节
+        // 删除文件项目
+        function deleteRecentFile(index) {
+            Swal.fire({
+                title: '确认删除',
+                text: '确定要删除这条阅读记录吗？',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '删除',
+                cancelButtonText: '取消',
+                confirmButtonColor: '#dc3545'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const recentFiles = storageUtil.get('recentFiles', []);
+                    recentFiles.splice(index, 1);
+                    storageUtil.set('recentFiles', recentFiles);
+                    indexedDBUtil.deleteFile(recentFiles[index].name);
+                    loadRecentFiles();
+
+                    Swal.fire({
+                        title: '已删除',
+                        text: '阅读记录已成功删除',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+        // 添加文件项目
+        async function addRecentFile(file, content) {
+            try {
+                const recentFiles = storageUtil.get('recentFiles', []);
+                const newFile = {
+                    name: file.name,
+                    time: new Date().getTime(),
+                    // 限制保存的内容大小，只保存前 1MB 的内容
+                    // content: content.slice(0, 1024 * 1024)
+                };
+
+                // 移除同名文件
+                const filteredFiles = recentFiles.filter(f => f.name !== file.name);
+
+                // 添加新文件到开头
+                filteredFiles.unshift(newFile);
+
+                // 保持最大数量
+                if (filteredFiles.length > MAX_RECENT_FILES) {
+                    filteredFiles.pop();
+                }
+
+                // 尝试保存，如果失败则清理更多空间
+                try {
+                    storageUtil.set('recentFiles', filteredFiles);
+                    await indexedDBUtil.addFile(file.name, content);
+                } catch (e) {
+                    console.warn('存储空间不足，正在清理...');
+                    // 如果还是存不下，则只保留最新的文件
+                    filteredFiles.splice(1);
+                    storageUtil.set('recentFiles', filteredFiles);
+                    await indexedDBUtil.addFile(file.name, content);
+                }
+
+                loadRecentFiles();
+            } catch (error) {
+                console.error('保存最近阅读记录失败:', error);
+                Swal.fire({
+                    title: '警告',
+                    text: '由于浏览器存储空间限制，无法保存完整的阅读记录',
+                    icon: 'warning'
+                });
+            }
+        }
+
+        // 加载阅读文件
+        async function loadRecentFile(name) {
+            const recentFiles = storageUtil.get('recentFiles', []);
+            const file = await indexedDBUtil.getFile(name);
+
+            // 检查是否有完整内容
+            if (!file.content) {
+                Swal.fire({
+                    title: '提示',
+                    text: '找不到内容',
+                    icon: 'info'
+                });
+                return;
+            }
+
+            try {
+                toggleLoadingIndicator(true);
+                parseChapters(file.content);
+                novelName = name; // 更新文件名
+                updateChapterList();
+                saveReadingProgress();
+            } catch (error) {
+                console.error('加载最近文件时出错:', error);
+                Swal.fire({
+                    title: '错误',
+                    text: '加载文件失败，请重试',
+                    icon: 'error'
+                });
+            } finally {
+                toggleLoadingIndicator(false);
+            }
+        }
+
+        // 解析章节
+        function parseChapters(text) {
+            try {
+                // 显示加载提示
+                toggleLoadingIndicator(true);
+
+                // 更强大的章节匹配模式
+                const chapterPattern = /^[第]?[0-9零一二三四五六七八九十百千万]+[章节回集卷][^\n]*$/gm;
+                const lines = text.split('\n');
+
+                chapters = [];
+                let currentChapter = {
+                    title: '',
+                    content: []
+                };
+
+                // 如果第一行不是章节标题，创建一个默认章节
+                if (!lines[0].match(chapterPattern)) {
+                    currentChapter.title = '开始';
+                }
+
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue; // 跳过空行
+
+                    const isChapterTitle = line.match(chapterPattern);
+                    if (isChapterTitle) {
+                        if (currentChapter.title) {
+                            chapters.push({ ...currentChapter });
+                        }
+                        currentChapter = {
+                            title: line,
+                            content: []
+                        };
+                    } else if (currentChapter.title) {
+                        currentChapter.content.push(line);
+                    }
+                }
+
+                // 添加最后一个章节
+                if (currentChapter.title && currentChapter.content.length > 0) {
+                    chapters.push(currentChapter);
+                }
+
+                // 检查是否成功解析到章节
+                if (chapters.length === 0) {
+                    // 如果没有识别到章节，将整个文本作为一个章节
+                    chapters.push({
+                        title: '全文',
+                        content: lines.filter(line => line.trim())
+                    });
+                }
+
+                displayChapterList();
+                if (chapters.length > 0) {
+                    showChapter(0);
+                    loadReaderSettings(); // 应用保存的设置
+                }
+
+                // 显示提示信息
+                Swal.fire({
+                    title: '加载成功',
+                    text: `共解析到 ${chapters.length} 个章节`,
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } catch (error) {
+                console.error('解析文件时出错:', error);
+                Swal.fire({
+                    title: '错误',
+                    text: '文件解析失败，请检查文件格式是否正确',
+                    icon: 'error'
+                });
+            } finally {
+                // 隐藏加载提示
+                toggleLoadingIndicator(false);
+            }
+        }
+
+        // 显示章节列表
+        function displayChapterList() {
+            // 但如果侧边栏目录正在显示，我们应该更新它
+            const sidebarChapterList = document.getElementById('sidebarChapterList');
+            if (sidebarChapterList) {
+                sidebarChapterList.innerHTML = '';
+
+                chapters.forEach((chapter, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'chapter-item';
+                    if (index === currentChapterIndex) {
+                        li.classList.add('active');
+                    }
+                    li.textContent = chapter.title;
+                    li.onclick = () => {
+                        showChapter(index);
+                        closeSidebar(); // 选择章节后关闭侧边栏
+                    };
+                    sidebarChapterList.appendChild(li);
+                });
+
+                // 滚动到当前章节位置
+                setTimeout(() => {
+                    const activeItem = sidebarChapterList.querySelector('.chapter-item.active');
+                    if (activeItem) {
+                        activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            }
+        }
+
+        // 打开章节
+        function showChapter(index) {
+            // 检查索引是否有效
+            if (index < 0 || index >= chapters.length) return;
+
+            currentChapterIndex = index;
+            const chapter = chapters[index];
+
+            // 如果侧边栏章节列表可见，更新其活动状态
+            const sidebarChapterList = document.getElementById('sidebarChapterList');
+            if (sidebarChapterList) {
+                const chapterItems = sidebarChapterList.querySelectorAll('.chapter-item');
+                chapterItems.forEach((item, idx) => {
+                    if (idx === index) {
+                        item.classList.add('active');
+                        // 使用 requestAnimationFrame 确保 DOM 更新后再滚动
+                        requestAnimationFrame(() => {
+                            item.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'nearest',
+                                inline: 'nearest'
+                            });
+                        });
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+
+            // 如果是自动拼接模式，先清除所有拼接的章节
+            if (pageMode === 'autoAppend') {
+                document.querySelectorAll('.appended-chapter').forEach(el => el.remove());
+                // 确保在自动拼接模式下隐藏导航按钮
+                document.querySelector('.nav-buttons').style.display = 'none';
+            } else {
+                // 在非自动拼接模式下显示导航按钮
+                document.querySelector('.nav-buttons').style.display = 'flex';
+            }
+
+            // 清除当前内容
+            const contentText = document.getElementById('contentText');
+            const contentTitle = document.getElementById('contentTitle');
+            contentText.innerHTML = '';
+            contentTitle.textContent = '';
+
+            // 更新内容
+            contentTitle.textContent = chapter.title;
+            contentText.innerHTML = chapter.content
+                .map(line => `<p>${line}</p>`)
+                .join('');
+
+            // 更新进度
+            updateReadProgress();
+
+            // 重置内容区域滚动位置
+            document.querySelector('.content').scrollTop = 0;
+
+            // 保存进度
+            saveReadingProgress();
+            // 保存到最近阅读章节
+            saveRecentChapter();
+
+            // 如果在自动拼接模式下，添加滚动监听
+            if (pageMode === 'autoAppend') {
+                const contentElement = document.querySelector('.content');
+                // 确保监听器已被移除，然后重新添加
+                contentElement.removeEventListener('scroll', checkScrollPositionForAppend);
+                contentElement.addEventListener('scroll', checkScrollPositionForAppend);
+            }
+        }
+
+        // 添加文件输入事件
+        function addEventFileInput() {
+            const fileInput = document.getElementById('sidebarFileInput');
+            const newFileInput = fileInput.cloneNode(true);
+
+            fileInput.parentNode.replaceChild(newFileInput, fileInput); // 移除旧的事件监听器（如果有）
+
+            // 添加新的事件监听器
+            newFileInput.addEventListener('change', async function (e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 显示加载提示
+                toggleLoadingIndicator(true);
+                closeSidebar(); // 关闭侧边栏
+
+                try {
+                    // 验证文件
+                    validateFile(file);
+
+                    // 先尝试检测文件编码
+                    const buffer = await file.arrayBuffer();
+                    const encoding = detectEncoding(new Uint8Array(buffer));
+
+                    // 使用分块读取
+                    const text = await readFileInChunks(file, encoding);
+
+                    if (!text || text.length === 0) {
+                        throw new Error('文件内容为空');
+                    }
+
+                    addRecentFile(file, text);
+                    parseChapters(text);
+                } catch (error) {
+                    console.error('文件处理错误:', error);
+                    toggleLoadingIndicator(false);
+                    // 提供更详细的错误信息
+                    Swal.fire({
+                        title: '错误',
+                        text: error.message || '文件处理失败，请重试',
+                        icon: 'error'
+                    });
+                } finally {
+                    toggleLoadingIndicator(false);
+                }
+            });
+        }
+
+        // 构建文件列表
+        function loadRecentFiles() {
+            const recentFiles = storageUtil.get('recentFiles', []);
+            const recentList = document.getElementById('sidebarRecentList');
+            recentList.innerHTML = '';
+
+            recentFiles.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.className = 'recent-item';
+                li.innerHTML = `
+                    <div class="recent-item-content" onclick="loadRecentFile('${file.name}')">
+                        <span class="recent-item-title">${file.name}</span>
+                        <span class="recent-item-time">${formatTime(file.time)}</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteRecentFile(${index})" title="删除">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                        </svg>
+                    </button>
+                `;
+                recentList.appendChild(li);
+            });
+        }
+
+        // 显示文件输入界面
+        function showFileInput() {
+            openSidebar('打开文件', 'fileInput');
+        }
+        //#endregion
+
+        //#region 章节列表
+        // 添加搜索事件
+        function addEventChapterSearch() {
+            const chapterList = document.getElementById('sidebarChapterList');
+            const searchInput = document.getElementById('chapterSearchInput');
+
+            const newSearchInput = searchInput.cloneNode(true);
+
+            searchInput.parentNode.replaceChild(newSearchInput, searchInput); // 移除旧的事件监听器
+
+            // 添加新的事件监听器
+            newSearchInput.addEventListener('input', function (e) {
+                const searchText = e.target.value.toLowerCase();
+                const items = chapterList.querySelectorAll('li');
+
+                items.forEach((item, index) => {
+                    const chapterTitle = chapters[index].title.toLowerCase();
+                    if (searchText === '' || chapterTitle.includes(searchText)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // 更新章节列表
+        function updateChapterList() {
+            const searchInput = document.getElementById('chapterSearchInput');
+            searchInput.value = ''; // 清空搜索框
+
+            const chapterList = document.getElementById('sidebarChapterList');
+            chapterList.innerHTML = ''; // 清空章节列表
+
+            // 遍历插入章节列表
+            chapters.forEach((chapter, index) => {
+                const li = document.createElement('li');
+                li.className = 'chapter-item';
+                if (index === currentChapterIndex) {
+                    li.classList.add('active');
+                }
+                li.textContent = chapter.title;
+                li.onclick = () => {
+                    showChapter(index);
+                    closeSidebar(); // 选择章节后关闭侧边栏
+                };
+                chapterList.appendChild(li);
+            });
+
+        }
+
+        // 显示章节列表
+        function showChapterList() {
+            openSidebar('章节目录', 'chapterList'); // 打开侧边栏，显示章节列表面板
+
+            const chapterList = document.getElementById('sidebarChapterList'); // 在侧边栏中显示章节列表
+
+            // 滚动到当前章节位置
+            setTimeout(() => {
+                const activeItem = chapterList.querySelector('.chapter-item.active');
+                if (activeItem) {
+                    activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        }
+        //#endregion
+
+        //#region 自动拼接模式
+        // 启用自动拼接模式
+        function enableAutoAppendMode() {
+            // 如果已经是自动拼接模式，不需要再次设置
+            if (pageMode === 'autoAppend') return;
+
+            // 保存当前模式
+            pageMode = 'autoAppend';
+
+            // 清除已拼接的章节内容
+            document.querySelectorAll('.appended-chapter').forEach(el => {
+                el.remove();
+            });
+
+            // 添加滚动监听
+            const contentElement = document.querySelector('.content');
+            contentElement.addEventListener('scroll', checkScrollPositionForAppend);
+
+            // 隐藏翻页按钮 - 始终隐藏
+            document.querySelector('.nav-buttons').style.display = 'none';
+
+            // 如果已经滚动到一定位置，就加载下一章
+            checkScrollPositionForAppend();
+        }
+
+        // 禁用自动拼接模式
+        function disableAutoAppendMode() {
+            // 如果已经是按钮模式，不需要再次设置
+            if (pageMode !== 'autoAppend') return;
+
+            // 保存当前模式
+            pageMode = 'button';
+
+            // 记住当前章节索引
+            const currentIndex = currentChapterIndex;
+
+            // 移除滚动监听
+            const contentElement = document.querySelector('.content');
+            contentElement.removeEventListener('scroll', checkScrollPositionForAppend);
+
+            // 显示翻页按钮 - 始终显示
+            document.querySelector('.nav-buttons').style.display = 'flex';
+
+            // 完全移除已拼接的章节
+            document.querySelectorAll('.appended-chapter').forEach(el => {
+                el.remove();
+            });
+
+            // 重新显示当前章节，避免内容丢失
+            showChapter(currentIndex);
+        }
+
+        // 检查滚动位置并在需要时添加下一章
+        function checkScrollPositionForAppend() {
+            // 只在自动拼接模式下执行
+            if (pageMode !== 'autoAppend') return;
+
+            const contentElement = document.querySelector('.content');
+            const scrollPosition = contentElement.scrollTop;
+            const scrollHeight = contentElement.scrollHeight;
+            const clientHeight = contentElement.clientHeight;
+
+            // 当距离底部小于600像素时，加载下一章，提前加载提高用户体验
+            if (scrollHeight - scrollPosition - clientHeight < 600) {
+                // 检查是否有下一章且下一章尚未被加载
+                if (currentChapterIndex < chapters.length - 1 &&
+                    !document.getElementById(`chapter-${currentChapterIndex + 1}`)) {
+                    appendNextChapter();
+                }
+            }
+        }
+
+        // 将下一章拼接到当前内容下方
+        function appendNextChapter() {
+            try {
+                // 确保有下一章
+                if (currentChapterIndex >= chapters.length - 1) return;
+
+                // 检查是否已经加载了这一章
+                const nextChapterIndex = currentChapterIndex + 1;
+                if (document.getElementById(`chapter-${nextChapterIndex}`)) return;
+
+                const nextChapter = chapters[nextChapterIndex];
+
+                // 检查章节内容是否有效
+                if (!nextChapter || !nextChapter.content || nextChapter.content.length === 0) {
+                    console.error("下一章节内容无效，跳过拼接");
+                    return;
+                }
+
+                // 创建文档片段，提高性能
+                const fragment = document.createDocumentFragment();
+
+                // 创建章节容器，方便统一管理
+                const chapterContainer = document.createElement('div');
+                chapterContainer.className = 'appended-chapter-container';
+                chapterContainer.dataset.chapterIndex = nextChapterIndex;
+
+                // 创建章节标题
+                const titleElement = document.createElement('h3');
+                titleElement.className = 'content-title appended-chapter';
+                titleElement.id = `chapter-${nextChapterIndex}-title`;
+                titleElement.textContent = nextChapter.title;
+                chapterContainer.appendChild(titleElement);
+
+                // 创建章节内容
+                const contentElement = document.createElement('div');
+                contentElement.className = 'content-text appended-chapter';
+                contentElement.id = `chapter-${nextChapterIndex}`;
+
+                // 为防止DOM操作过多，使用innerHTML一次性设置内容
+                contentElement.innerHTML = nextChapter.content
+                    .map(line => `<p>${line}</p>`)
+                    .join('');
+                chapterContainer.appendChild(contentElement);
+
+                // 获取当前设置并应用到新章节
+                const settings = storageUtil.get('readerSettings') || {
+                    fontSize: '18',
+                    lineHeight: '1.8',
+                    fontFamily: 'Noto Serif SC'
+                };
+
+                // 应用样式到新章节内容
+                contentElement.style.fontSize = `${settings.fontSize}px`;
+                contentElement.style.lineHeight = settings.lineHeight;
+                contentElement.style.fontFamily = settings.fontFamily;
+
+                // 将章节容器添加到文档片段
+                fragment.appendChild(chapterContainer);
+
+                // 将新章节添加到内容区域
+                const contentArea = document.querySelector('.content');
+                contentArea.appendChild(fragment);
+
+                // 更新当前章节索引
+                currentChapterIndex = nextChapterIndex;
+
+                // 更新侧边栏章节列表的活动状态
+                updateChapterListActiveState(nextChapterIndex);
+
+                // 更新进度
+                updateReadProgress();
+
+                // 保存阅读进度
+                saveReadingProgress();
+                saveRecentChapter();
+
+                // 内存管理：如果拼接的章节过多，可以移除较早的章节
+                managePrependedChapters();
+            } catch (error) {
+                console.error("拼接章节时出错:", error);
+            }
+        }
+
+        // 更新章节列表的活动状态
+        function updateChapterListActiveState(activeIndex) {
+            const sidebarChapterList = document.getElementById('sidebarChapterList');
+            if (sidebarChapterList) {
+                const items = sidebarChapterList.querySelectorAll('.chapter-item');
+                items.forEach((item, idx) => {
+                    if (idx === activeIndex) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+        }
+
+        // 管理已拼接的章节，防止内存占用过大
+        function managePrependedChapters() {
+            const MAX_APPENDED_CHAPTERS = 5; // 最多保留5个拼接章节
+            const containers = document.querySelectorAll('.appended-chapter-container');
+
+            // 如果拼接的章节数超过最大值，移除最早的章节容器
+            if (containers.length > MAX_APPENDED_CHAPTERS) {
+                // 获取最早添加的章节容器（DOM中的第一个）
+                const oldestContainer = containers[0];
+
+                // 安全移除：确保元素存在才删除
+                if (oldestContainer) {
+                    oldestContainer.remove();
+                }
+            }
+        }
+        //#endregion
+
+        document.getElementById('prevChapter').onclick = () => showChapter(currentChapterIndex - 1);
+        document.getElementById('nextChapter').onclick = () => showChapter(currentChapterIndex + 1);
+
+        // 监听滚动事件
+        document.querySelector('.content').addEventListener('scroll', debounce(() => {
+            saveReadingProgress();
+        }, 500));
+
+        // 页面加载时初始化
+        window.addEventListener('load', () => {
+            loadRecentFiles(); // 构建文件列表
+            showShortcutTip(); // 显示快捷提示
+            loadReaderSettings(); // 加载阅读配置
+            restoreReadingProgress(); // 恢复上次的阅读进度
+
+            // 页面加载时恢复目录状态
+            const isCollapsed = storageUtil.get('chaptersCollapsed') === 'true';
+            if (isCollapsed) {
+                document.querySelector('.chapters').classList.add('collapsed');
+            }
+
+            addEventFileInput(); // 添加文件输入事件
+            addEventChapterSearch(); // 添加搜索事件
+
+            startReadingTimer(); // 页面加载时恢复阅读时间
+            showReadingTime(); // 构建阅读时间
+
+            generateThemeList() // 构建主题列表
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,186 @@
+:root {
+  /* 极简皎月 */
+  --bg-color: #ffffff;
+  --text-color: #2e3440;
+  --header-bg: #3b4252;
+  --card-bg: #ffffff;
+  --border-color: #e6e9ef;
+  --hover-bg: #f9fafb;
+  --active-bg: #e5efff;
+  --active-color: #1b74e4;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] {
+  /* 极简深夜 */
+  --bg-color: #121212;
+  --text-color: #eceff4;
+  --header-bg: #1f2937;
+  --card-bg: #1e1e1e;
+  --border-color: #333333;
+  --hover-bg: #2a2a2a;
+  --active-bg: #2c3f58;
+  --active-color: #81a1c1;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="sepia"] {
+  /* 极简护眼 */
+  --bg-color: #f8f0e3;
+  --text-color: #4b3f2f;
+  --header-bg: #786449;
+  --card-bg: #fff8ee;
+  --border-color: #e8d7be;
+  --hover-bg: #faf4e8;
+  --active-bg: #efe2cb;
+  --active-color: #8e6f47;
+  --shadow: 0 2px 12px rgba(139, 115, 85, 0.08);
+}
+
+[data-theme="green"] {
+  /* 极简森林 */
+  --bg-color: #f4f9f6;
+  --text-color: #28413a;
+  --header-bg: #26755c;
+  --card-bg: #ffffff;
+  --border-color: #c0e6d9;
+  --hover-bg: #ebf6f2;
+  --active-bg: #c6e8de;
+  --active-color: #14805e;
+  --shadow: 0 2px 12px rgba(38, 117, 92, 0.07);
+}
+
+[data-theme="blue"] {
+  /* 极简海洋 */
+  --bg-color: #f5f8fd;
+  --text-color: #2d4263;
+  --header-bg: #0a66c2;
+  --card-bg: #ffffff;
+  --border-color: #d5e3f6;
+  --hover-bg: #eaf2ff;
+  --active-bg: #cce0ff;
+  --active-color: #0a66c2;
+  --shadow: 0 2px 12px rgba(10, 102, 194, 0.06);
+}
+
+[data-theme="purple"] {
+  /* 极简罗兰 */
+  --bg-color: #f8f7fc;
+  --text-color: #3e345b;
+  --header-bg: #6d28d9;
+  --card-bg: #ffffff;
+  --border-color: #e5dff9;
+  --hover-bg: #f4f0ff;
+  --active-bg: #ead5ff;
+  --active-color: #6d28d9;
+  --shadow: 0 2px 12px rgba(109, 40, 217, 0.06);
+}
+
+[data-theme="pink"] {
+  /* 极简樱花 */
+  --bg-color: #fef4f7;
+  --text-color: #862e59;
+  --header-bg: #db2777;
+  --card-bg: #ffffff;
+  --border-color: #fcd5e7;
+  --hover-bg: #feeef4;
+  --active-bg: #fccde4;
+  --active-color: #db2777;
+  --shadow: 0 2px 12px rgba(219, 39, 119, 0.06);
+}
+
+[data-theme="dark-blue"] {
+  /* 极简深海 */
+  --bg-color: #0d1b2a;
+  --text-color: #e6f1ff;
+  --header-bg: #1e429f;
+  --card-bg: #1b2d4d;
+  --border-color: #253f5e;
+  --hover-bg: #223457;
+  --active-bg: #1e429f;
+  --active-color: #6bace9;
+  --shadow: 0 2px 12px rgba(13, 27, 42, 0.4);
+}
+
+[data-theme="dark-green"] {
+  /* 极简墨绿 */
+  --bg-color: #0f1922;
+  --text-color: #d8fbeb;
+  --header-bg: #065f46;
+  --card-bg: #172a36;
+  --border-color: #234451;
+  --hover-bg: #1c3443;
+  --active-bg: #065f46;
+  --active-color: #10b981;
+  --shadow: 0 2px 12px rgba(15, 25, 34, 0.4);
+}
+
+/* 主题样本颜色 */
+.theme-sample.light {
+  background: #ffffff;
+}
+
+.theme-sample.dark {
+  background: #121212;
+}
+
+.theme-sample.sepia {
+  background: #f8f0e3;
+}
+
+.theme-sample.green {
+  background: #f4f9f6;
+}
+
+.theme-sample.blue {
+  background: #f5f8fd;
+}
+
+.theme-sample.purple {
+  background: #f8f7fc;
+}
+
+.theme-sample.pink {
+  background: #fef4f7;
+}
+
+.theme-sample.dark-blue {
+  background: #0d1b2a;
+}
+
+.theme-sample.dark-green {
+  background: #0f1922;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+.content::-webkit-scrollbar-track {
+  background: var(--bg-color);
+  border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: var(--active-color);
+}
