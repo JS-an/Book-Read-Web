@@ -603,19 +603,13 @@
                     time: new Date().getTime()
                 };
 
-                // 移除相同章节
+                // 移除相同书
                 const filteredChapters = recentChapters.filter(chapter =>
-                    chapter.title !== currentChapter.title ||
-                    chapter.fileName !== currentChapter.fileName
+                    chapter.novelName !== currentChapter.novelName
                 );
 
                 // 添加到开头
                 filteredChapters.unshift(currentChapter);
-
-                // 保持最大数量为10
-                if (filteredChapters.length > 10) {
-                    filteredChapters.pop();
-                }
 
                 storageUtil.set('recentChapters', filteredChapters);
             } catch (error) {
@@ -635,9 +629,9 @@
                     ${recentChapters.map((chapter, index) => `
                         <div class="recent-item">
                             <div class="recent-item-info" onclick="jumpToRecentChapter(${index})">
-                                <div class="recent-item-title">${chapter.title}</div>
+                                <div class="recent-item-title">${chapter.novelName}</div>
                                 <div class="recent-item-time">${formatTime(chapter.time)}</div>
-                                <div class="recent-item-file">${chapter.fileName}</div>
+                                <div class="recent-item-file">${chapter.title}</div>
                             </div>
                             <button class="delete-btn" onclick="deleteRecentChapter(${index}); event.stopPropagation();">
                                 <svg viewBox="0 0 24 24" width="16" height="16">
